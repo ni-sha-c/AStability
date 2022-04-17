@@ -147,10 +147,10 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             model_path = arch + '_' + dataset  + '_p_'+ str(precision) + '_model_' + str(checkpoint_epoch+x)+ '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs_ip_1000_4/norm.txt", norm_list)
-    np.savetxt("outputs_ip_1000_4/norm_comp.txt", norm1_list)
-    np.savetxt("outputs_ip_1000_4/test_acc.txt", acc_list)
-    np.savetxt("outputs_ip_1000_4/loss.txt", loss_list)
+    np.savetxt("outputs/no_data_aug/norm.txt", norm_list)
+    np.savetxt("outputs/no_data_aug/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/no_data_aug/test_acc.txt", acc_list)
+    np.savetxt("outputs/no_data_aug/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
@@ -168,7 +168,6 @@ def test(testloader, model, device):
           correct=torch.sum(preds == classes.data)
           running_correct += correct
           
-
     acc = (running_correct.double()/(len(testloader.dataset)))
     print('Eval Accuracy %.3f'%(acc))
     return acc
