@@ -87,8 +87,12 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
 
             # Input perturbation
             if batch_id == 0:
+                first_ip = inputs[0,:,:,:]
+                first_op = outputs[0]
                 inputs = inputs[1:,:,:,:]
                 outputs = outputs[1:]
+                inputs[4,:,:,:] = first_ip
+                outputs[4] = first_op
 
                 #    inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
             
@@ -135,10 +139,10 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             model_path = arch + '_' + dataset  + '_p_'+ str(precision) + '_model_' + str(checkpoint_epoch+x)+ '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/first_pt_rmvd/norm.txt", norm_list)
-    np.savetxt("outputs/first_pt_rmvd/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/first_pt_rmvd/test_acc.txt", acc_list)
-    np.savetxt("outputs/first_pt_rmvd/loss.txt", loss_list)
+    np.savetxt("outputs/pert5/norm.txt", norm_list)
+    np.savetxt("outputs/pert5/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/pert5/test_acc.txt", acc_list)
+    np.savetxt("outputs/pert5/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
