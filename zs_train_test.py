@@ -87,23 +87,11 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
 
             # Input perturbation
             if batch_id == 0:
-                inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
-               
+                inputs = inputs[1:,:,:,:]
+                outputs = outputs[1:]
+
+                #    inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
             
-            # Store original model parameters before quantization/perturbation, detached from graph
-            if(precision > 0): 
-                list_init_params = []
-                with torch.no_grad():
-                    for init_params in model.parameters():
-                        list_init_params.append(init_params.clone().detach())
-
-                if (debug):
-                    if (batch_id % 100 == 0):
-                        print('initial params')
-                        print(model.fc2.weight[0:3,0:3])
-                        print(model.conv1.weight[0,0,:,:])
-                
-
             model_outputs = model(inputs)
 
             _, preds = torch.max(model_outputs, 1)
@@ -147,10 +135,10 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             model_path = arch + '_' + dataset  + '_p_'+ str(precision) + '_model_' + str(checkpoint_epoch+x)+ '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/no_data_aug/norm.txt", norm_list)
-    np.savetxt("outputs/no_data_aug/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/no_data_aug/test_acc.txt", acc_list)
-    np.savetxt("outputs/no_data_aug/loss.txt", loss_list)
+    np.savetxt("outputs/first_pt_rmvd/norm.txt", norm_list)
+    np.savetxt("outputs/first_pt_rmvd/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/first_pt_rmvd/test_acc.txt", acc_list)
+    np.savetxt("outputs/first_pt_rmvd/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()

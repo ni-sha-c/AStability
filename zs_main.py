@@ -57,10 +57,7 @@ def main(argv):
     ])
 
         trainset = torchvision.datasets.CIFAR10(root=cfg.data_dir, train=True, download=True, transform=transform_train)
-        trainset.data = np.delete(trainset.data, 0, 0)
-        print("training set is ", trainset.data.shape)
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=cfg.batch_size, shuffle=True, num_workers=2)
-
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=cfg.batch_size, shuffle=False, num_workers=2)
         testset = torchvision.datasets.CIFAR10(root=cfg.data_dir, train=False, download=True, transform=transform_test)
         testloader = torch.utils.data.DataLoader(testset, batch_size=cfg.test_batch_size, shuffle=False, num_workers=2)
 
