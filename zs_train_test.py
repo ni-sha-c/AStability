@@ -1,4 +1,3 @@
-
 import numpy as np
 import os 
 import sys
@@ -110,13 +109,6 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             _, preds = torch.max(model_outputs, 1)
             outputs = outputs.view(outputs.size(0))  ## changing the size from (batch_size,1) to batch_size. 
 
-            if (precision > 0):
-                if (debug):
-                    if (batch_id % 100 == 0):
-                        print('quantized params')
-                        print(model.fc2.weight[0:3,0:3])
-                        print(model.conv1.weight[0,0,:,:])
-
             loss = nn.CrossEntropyLoss()(model_outputs, outputs)
 
             if (debug):
@@ -124,18 +116,6 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
 
             # Compute gradient of perturbed weights with perturbed loss 
             loss.backward()
-
-            # restore model weights with unquantized value
-            if (precision > 0):
-                with torch.no_grad():
-                    for i,restored_params in enumerate(model.parameters()):
-                        restored_params.copy_(list_init_params[i])
-
-                if (debug):
-                    if (batch_id % 100 == 0):
-                        print('restored params')
-                        print(model.fc2.weight[0:3,0:3])
-                        print(model.conv1.weight[0,0,:,:])
 
             # update restored weights with gradient 
             opt.step()
