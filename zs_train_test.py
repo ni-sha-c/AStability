@@ -73,7 +73,7 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
     pflag = 0
     #curr_lr=cfg.learning_rate
                 
-                
+    print("Length of trainloader: ", len(trainloader))   
 
     for x in range(cfg.epochs):
 
@@ -84,20 +84,35 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             inputs = inputs.to(device)
             outputs = outputs.to(device)
             opt.zero_grad()
+            
+            if batch_id == 0:
+                print("Before: ", outputs[:10])
+            # Noise injection in labels
+            
+            #for i in range(cfg.batch_size): 
+            #    u = np.random.rand()
+            #    if u < cfg.noise:
+            #        u = np.random.rand()
+            #        bin_u = int(9*u)
+            #        op_i = outputs[i]
+            #        if bin_u < op_i:
+            #            outputs[i] = bin_u
+            #        else:
+            #            outputs[i] = bin_u + 1
 
             # Input perturbation
             if batch_id == 0:
-                first_ip = inputs[0,:,:,:]
-                first_op = outputs[0]
-                inputs = inputs[1:,:,:,:]
-                outputs = outputs[1:]
-                inputs[4,:,:,:] = first_ip
-                outputs[4] = first_op
+                print("After: ", outputs[:10])
+            #    first_ip = inputs[0,:,:,:]
+            #    first_op = outputs[0]
+            #    inputs = inputs[1:,:,:,:]
+            #    outputs = outputs[1:]
+            #    inputs[4,:,:,:] = first_ip
+            #    outputs[4] = first_op
 
                 #    inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
             
             model_outputs = model(inputs)
-
             _, preds = torch.max(model_outputs, 1)
             outputs = outputs.view(outputs.size(0))  ## changing the size from (batch_size,1) to batch_size. 
 
@@ -115,14 +130,14 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
 
             running_loss+=loss.item()
             running_correct+=torch.sum(preds == outputs.data)
-
+            print("batch id is ", batch_id)
         # update learning rate
         #if ((x==80) or (x == 120)):
         #    curr_lr /= 10.0
         #    for param_group in opt.param_groups:
         #        param_group['lr'] = curr_lr
         #    print('Training with Learning rate %.4f'%(curr_lr))
-     
+
         loss_list[x] = (running_loss/(batch_id))
 
         # norm
@@ -139,10 +154,10 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             model_path = arch + '_' + dataset  + '_p_'+ str(precision) + '_model_' + str(checkpoint_epoch+x)+ '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/pert5/norm.txt", norm_list)
-    np.savetxt("outputs/pert5/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/pert5/test_acc.txt", acc_list)
-    np.savetxt("outputs/pert5/loss.txt", loss_list)
+    np.savetxt("outputs/test/norm.txt", norm_list)
+    np.savetxt("outputs/test/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/test/test_acc.txt", acc_list)
+    np.savetxt("outputs/test/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
