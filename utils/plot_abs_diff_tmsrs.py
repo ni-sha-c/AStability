@@ -35,11 +35,47 @@ for i in range(n_dpts):
         m_dloss += dlosses[k]/n_data
         k = k + 1
 err_dloss = sum((dlosses - m_dloss)**2, axis=0)/n_data
-err_dloss = sqrt(err_dloss/n_data)
-ax.errorbar(range(num_el)[::skip], m_dloss[::skip], yerr=err_dloss[::skip], fmt="o", ms=6, ecolor="dodgerblue", color="midnightblue", elinewidth=0.4, label='Sto alg stab')
+err_dloss = sqrt(err_dloss)
+ax.errorbar(range(num_el)[::skip], m_dloss[::skip], yerr=err_dloss[::skip], fmt="o", ms=6, ecolor="dodgerblue", color="midnightblue", elinewidth=0.4, label='Stoc stab')
 ax.legend(fontsize=16)
 tight_layout()
 fig.savefig('../plots/loss_sens_orig.png')
+
+
+
+fig, ax = subplots()
+ax.set_xlabel("Time", fontsize=16)
+ax.set_ylabel(r"$|\Delta $ Accuracy| in %", fontsize=16)
+ax.xaxis.set_tick_params(labelsize=16)
+ax.yaxis.set_tick_params(labelsize=16)
+ax.grid(True)
+acc = loadtxt('../'+direc[0]+'/test_acc.txt')
+acc = acc[racc:-1]
+nacc = len(acc)
+acces = zeros((n_dpts, nacc))
+for i, di in enumerate(direc):
+    acc = loadtxt('../'+di+'/test_acc.txt')
+    acc = acc[racc:-1]
+    acc = cumsum(acc)/arange(1, nacc+1)
+    acces[i] = acc
+
+k = 0
+dacces = zeros((n_data, nacc))
+m_dacc = zeros(nacc)
+for i in range(n_dpts):
+    for j in range(i+1, n_dpts):
+        dacces[k] = abs(acces[i] - acces[j])
+        m_dacc += dacces[k]/n_data
+        k = k + 1
+err_dacc = sum((dacces - m_dacc)**2, axis=0)/n_data
+err_dacc = sqrt(err_dacc)
+ax.errorbar(range(0,dacc*nacc,dacc)[::skip], m_dacc[::skip], yerr=err_dacc[::skip], fmt="o", ms=6, ecolor="dodgerblue", color="midnightblue", elinewidth=2.0, label='Stoc stab')
+ax.legend(fontsize=16)
+tight_layout()
+fig.savefig('../plots/acc_sens_orig.png')
+
+
+
 
 """
 fig, ax = subplots()
