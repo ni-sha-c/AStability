@@ -73,8 +73,7 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
     pflag = 0
     #curr_lr=cfg.learning_rate
                 
-    print("Length of trainloader: ", len(trainloader))   
-
+    outputs_corrupt = np.zeros((len(trainloader), cfg.batch_size))
     for x in range(cfg.epochs):
 
         running_loss = 0.0
@@ -85,30 +84,31 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             outputs = outputs.to(device)
             opt.zero_grad()
             
-            if batch_id == 0:
-                print("Before: ", outputs[:10])
-            # Noise injection in labels
-            
-            #for i in range(cfg.batch_size): 
-            #    u = np.random.rand()
-            #    if u < cfg.noise:
-            #        u = np.random.rand()
-            #        bin_u = int(9*u)
-            #        op_i = outputs[i]
-            #        if bin_u < op_i:
-            #            outputs[i] = bin_u
-            #        else:
-            #            outputs[i] = bin_u + 1
+            # Sample noisy labels
+            if x == 0:
+                for ind, o_ind in enumerate(outputs): 
+                    u = np.random.rand()
+                    outputs_corrupt[batch_id, ind] = o_ind
+                    if u < cfg.noise:
+                        u = np.random.rand()
+                        bin_u = int(9*u)
+                        if bin_u < o_ind:
+                            outputs_corrupt[batch_id, ind] = bin_u
+                        else:
+                            outputs_corrupt[batch_id, ind] = bin_u
 
+            # Inject noise into labels
+            for ind, o_ind in enumerate(outputs):
+                outputs[ind] = outputs_corrupt[batch_id,ind]
+            
             # Input perturbation
             if batch_id == 0:
-                print("After: ", outputs[:10])
-            #    first_ip = inputs[0,:,:,:]
-            #    first_op = outputs[0]
-            #    inputs = inputs[1:,:,:,:]
-            #    outputs = outputs[1:]
-            #    inputs[4,:,:,:] = first_ip
-            #    outputs[4] = first_op
+                #first_ip = inputs[0,:,:,:]
+                #first_op = outputs[0]
+                inputs = inputs[1:,:,:,:]
+                outputs = outputs[1:]
+                #inputs[4,:,:,:] = first_ip
+                #outputs[4] = first_op
 
                 #    inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
             
@@ -130,7 +130,6 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
 
             running_loss+=loss.item()
             running_correct+=torch.sum(preds == outputs.data)
-            print("batch id is ", batch_id)
         # update learning rate
         #if ((x==80) or (x == 120)):
         #    curr_lr /= 10.0
@@ -154,10 +153,10 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             model_path = arch + '_' + dataset  + '_p_'+ str(precision) + '_model_' + str(checkpoint_epoch+x)+ '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/test/norm.txt", norm_list)
-    np.savetxt("outputs/test/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/test/test_acc.txt", acc_list)
-    np.savetxt("outputs/test/loss.txt", loss_list)
+    np.savetxt("outputs/first_pt_rmvd_noise_50/norm.txt", norm_list)
+    np.savetxt("outputs/first_pt_rmvd_noise_50/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/first_pt_rmvd_noise_50/test_acc.txt", acc_list)
+    np.savetxt("outputs/first_pt_rmvd_noise_50/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()

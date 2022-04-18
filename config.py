@@ -9,7 +9,7 @@ cfg.faulty_layers = ['linear']
 
 cfg.batch_size = 128
 cfg.test_batch_size = 100
-cfg.epochs = 1
+cfg.epochs = 2000
 cfg.precision = -1
 cfg.noise = 0.5
 #cfg.net = 'resnet56'
