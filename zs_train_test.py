@@ -73,7 +73,8 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
     pflag = 0
     #curr_lr=cfg.learning_rate
                 
-    outputs_corrupt = np.zeros((len(trainloader), cfg.batch_size))
+    if cfg.noise > 1.e-8:
+        outputs_corrupt = np.zeros((len(trainloader), cfg.batch_size))
     for x in range(cfg.epochs):
 
         running_loss = 0.0
@@ -150,14 +151,14 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
         if ((x)%num_acc == 0) or (x==cfg.epochs-1):
             acc_list[y] = test(testloader, model, device)
             y = y+1
-        if x%200 == 0:
-            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '_' + str(cfg.noise)+ '189' + '.pth'
+        if x%1999 == 0:
+            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '_orbit4_n25' + '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    #np.savetxt("outputs/first_pt_rmvd_noise_25/norm.txt", norm_list)
-    #np.savetxt("outputs/first_pt_rmvd_noise_25/norm_comp.txt", norm1_list)
-    #np.savetxt("outputs/first_pt_rmvd_noise_25/test_acc.txt", acc_list)
-    #np.savetxt("outputs/first_pt_rmvd_noise_25/loss.txt", loss_list)
+    np.savetxt("outputs/orbits/orbit4_n25/norm.txt", norm_list)
+    np.savetxt("outputs/orbits/orbit4_n25/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/orbits/orbit4_n25/test_acc.txt", acc_list)
+    np.savetxt("outputs/orbits/orbit4_n25/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
