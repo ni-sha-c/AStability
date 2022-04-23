@@ -85,7 +85,7 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             opt.zero_grad()
             
             # Sample noisy labels
-            if x == 0:
+            if x == 0 and cfg.noise > 1.e-8:
                 for ind, o_ind in enumerate(outputs): 
                     u = np.random.rand()
                     outputs_corrupt[batch_id, ind] = o_ind
@@ -98,17 +98,18 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
                             outputs_corrupt[batch_id, ind] = bin_u
 
             # Inject noise into labels
-            for ind, o_ind in enumerate(outputs):
-                outputs[ind] = outputs_corrupt[batch_id,ind]
+            if cfg.noise > 1.e-8:
+                for ind, o_ind in enumerate(outputs):
+                    outputs[ind] = outputs_corrupt[batch_id,ind]
             
             # Input perturbation
-            if batch_id == 0:
+            if batch_id == 0 and cfg.pert_ip == 1:
                 first_ip = inputs[0,:,:,:]
                 first_op = outputs[0]
                 inputs = inputs[1:,:,:,:]
                 outputs = outputs[1:]
-                inputs[4,:,:,:] = first_ip
-                outputs[4] = first_op
+                inputs[1,:,:,:] = first_ip
+                outputs[1] = first_op
 
                 #    inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
             
@@ -150,13 +151,13 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             acc_list[y] = test(testloader, model, device)
             y = y+1
         if x%200 == 0:
-            model_path = arch + '_' + dataset  + '_p_'+ str(precision) + '_model_' + str(checkpoint_epoch+x)+ '.pth'
+            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '_' + str(cfg.noise)+ '189' + '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/pert5_noise_50/norm.txt", norm_list)
-    np.savetxt("outputs/pert5_noise_50/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/pert5_noise_50/test_acc.txt", acc_list)
-    np.savetxt("outputs/pert5_noise_50/loss.txt", loss_list)
+    #np.savetxt("outputs/first_pt_rmvd_noise_25/norm.txt", norm_list)
+    #np.savetxt("outputs/first_pt_rmvd_noise_25/norm_comp.txt", norm1_list)
+    #np.savetxt("outputs/first_pt_rmvd_noise_25/test_acc.txt", acc_list)
+    #np.savetxt("outputs/first_pt_rmvd_noise_25/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
