@@ -39,6 +39,30 @@ def init_models(arch, precision, retrain, checkpoint_path):
       model = lenet(in_channels,10,precision)
     
     print(model)
+    # Fixed initial condition
+    epsi = 1.e-3
+    with torch.no_grad():
+        for i, lay_i in enumerate(model.features):
+            if type(lay_i) == nn.Conv2d:
+                file_w = 'weights/wt_' + str(i) + '.npy'
+                file_b = 'weights/b_' + str(i) + '.npy'
+                with open(file_w, 'rb') as fw:
+                    temp_arr = torch.from_numpy(np.load(fw))
+                    dims_w = temp_arr.shape
+                    for d1 in range(dims_w[0]):
+                        for d2 in range(dims_w[1]):
+                            for d3 in range(dims_w[2]):
+                                for d4 in range(dims_w[3]):
+                                    model.features[i].weight[d1,d2,d3,d4] = temp_arr[d1,d2,d3,d4]
+                                    if i == 40 and d1 == 0 and d2 == 0 and d3 == 0 and d4 == 0:
+                                        print(lay_i.weight[d1,d2,d3,d4])
+                                        model.features[i].weight[d1,d2,d3,d4] += epsi*np.random.rand()
+                                        
+                with open(file_b, 'rb') as fb:
+                    temp_arr = torch.from_numpy(np.load(fb))
+                    dims_b = temp_arr.shape
+                    for d1 in range(dims_b[0]):
+                        model.features[i].bias[d1] = temp_arr[d1]
 
     checkpoint_epoch = 0
     if (retrain):
@@ -63,7 +87,6 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
     acc_list =  np.zeros(cfg.epochs//num_acc + 2)
     y = 0
     model, checkpoint_epoch = init_models(arch, precision, retrain, checkpoint_path)
-
     print('Training with Learning rate %.4f'%(cfg.learning_rate))
     opt = optim.SGD(model.parameters(),lr=cfg.learning_rate, momentum=0.9, weight_decay=cfg.weight_decay)
 
@@ -152,13 +175,13 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             acc_list[y] = test(testloader, model, device)
             y = y+1
         if x%1999 == 0:
-            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '_orbit4_n25' + '.pth'
+            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '_pert3' + '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/orbits/orbit4_n25/norm.txt", norm_list)
-    np.savetxt("outputs/orbits/orbit4_n25/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/orbits/orbit4_n25/test_acc.txt", acc_list)
-    np.savetxt("outputs/orbits/orbit4_n25/loss.txt", loss_list)
+    np.savetxt("outputs/lyapunov/pert3/norm.txt", norm_list)
+    np.savetxt("outputs/lyapunov/pert3/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/lyapunov/pert3/test_acc.txt", acc_list)
+    np.savetxt("outputs/lyapunov/pert3/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
