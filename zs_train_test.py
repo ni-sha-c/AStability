@@ -119,7 +119,7 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
                         if bin_u < o_ind:
                             outputs_corrupt[batch_id, ind] = bin_u
                         else:
-                            outputs_corrupt[batch_id, ind] = bin_u
+                            outputs_corrupt[batch_id, ind] = bin_u+1
 
             # Inject noise into labels
             if cfg.noise > 1.e-8:
@@ -132,8 +132,8 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
                 first_op = outputs[0]
                 inputs = inputs[1:,:,:,:]
                 outputs = outputs[1:]
-                inputs[1,:,:,:] = first_ip
-                outputs[1] = first_op
+                inputs[4,:,:,:] = first_ip
+                outputs[4] = first_op
 
                 #    inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
             
@@ -175,13 +175,13 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             acc_list[y] = test(testloader, model, device)
             y = y+1
         if x%(cfg.epochs-1) == 0:
-            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '_pert3' + '.pth'
+            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/accuracy-transient/50/norm.txt", norm_list)
-    np.savetxt("outputs/accuracy-transient/50/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/accuracy-transient/50/test_acc.txt", acc_list)
-    np.savetxt("outputs/accuracy-transient/50/loss.txt", loss_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_10/norm.txt", norm_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_10/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_10/test_acc.txt", acc_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_10/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
