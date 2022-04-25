@@ -178,10 +178,10 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_10/norm.txt", norm_list)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_10/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_10/test_acc.txt", acc_list)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_10/loss.txt", loss_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/norm.txt", norm_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/test_acc.txt", acc_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
