@@ -9,7 +9,7 @@ acc = loadtxt('../'+direc+'/test_acc.txt')
 c = loadtxt('../'+direc+'/norm_comp.txt')
 n = loadtxt('../'+direc+'/norm.txt')
 runup = 200
-racc = 4
+racc = 5
 dacc = 40
 loss = loss[runup:]
 acc = 100*acc[racc:-1]
@@ -25,43 +25,43 @@ n_ca = cumsum(n)/time_arr
 
 
 fig, ax = subplots()
-ax.plot(loss_ca,lw=3.0,color='b')
+ax.plot(loss,lw=3.0,color='b')
 ax.set_xlabel("Time", fontsize=16)
 ax.set_ylabel("Training loss", fontsize=16)
 ax.xaxis.set_tick_params(labelsize=16)
 ax.yaxis.set_tick_params(labelsize=16)
 ax.grid(True)
 tight_layout()
-fig.savefig("../plots/loss_no_data_aug.png")
+fig.savefig("../plots/loss_frst_pt_rmvd.png")
 
 fig, ax = subplots()
-ax.plot(range(racc*dacc,dacc*(len(acc_ca)+racc),dacc),acc_ca,lw=3.0,color='b')
+ax.plot(range(racc*dacc,dacc*(len(acc_ca)+racc),dacc),acc,lw=3.0,color='b')
 ax.set_xlabel("Time", fontsize=16)
 ax.set_ylabel("Test accuracy %", fontsize=16)
 ax.xaxis.set_tick_params(labelsize=16)
 ax.yaxis.set_tick_params(labelsize=16)
 ax.grid(True)
 tight_layout()
-fig.savefig("../plots/test_acc_no_data_aug.png")
+fig.savefig("../plots/test_acc_frst_pt_rmvd.png")
 
 fig, ax = subplots()
-ax.plot(n_ca,lw=3.0,color='b')
+ax.plot(n,lw=3.0,color='b')
 ax.set_xlabel("Time", fontsize=16)
 ax.set_ylabel("Norm of first layer weights", fontsize=16)
 ax.xaxis.set_tick_params(labelsize=16)
 ax.yaxis.set_tick_params(labelsize=16)
 ax.grid(True)
 tight_layout()
-fig.savefig("../plots/weight_norm_no_data_aug.png")
+fig.savefig("../plots/weight_norm_frst_pt_rmvd.png")
 
 
 fig, ax = subplots()
-ax.plot(c_ca,lw=3.0,color='b')
+ax.plot(c,lw=3.0,color='b')
 ax.set_xlabel("Time", fontsize=16)
 ax.set_ylabel("First component of weight vector", fontsize=16)
 ax.xaxis.set_tick_params(labelsize=16)
 ax.yaxis.set_tick_params(labelsize=16)
 ax.grid(True)
 tight_layout()
-fig.savefig("../plots/weight_comp_no_data_aug.png")
+fig.savefig("../plots/weight_comp_frst_pt_rmvd.png")
 

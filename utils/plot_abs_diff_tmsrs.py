@@ -39,7 +39,7 @@ err_dloss = sqrt(err_dloss/n_data)
 ax.errorbar(range(num_el)[::skip], m_dloss[::skip], yerr=err_dloss[::skip], fmt="o", ms=6, ecolor="dodgerblue", color="midnightblue", elinewidth=0.4, label='Stoc stab')
 ax.legend(fontsize=16)
 tight_layout()
-fig.savefig('../plots/loss_sens_orig.png')
+fig.savefig('../plots/loss_sens_noise_25.png')
 
 
 
@@ -72,7 +72,7 @@ err_dacc = sqrt(err_dacc/n_data)
 ax.errorbar(range(0,dacc*nacc,dacc)[::skip], m_dacc[::skip], yerr=err_dacc[::skip], fmt="o", ms=6, ecolor="dodgerblue", color="midnightblue", elinewidth=2.0, label='Stoc stab')
 ax.legend(fontsize=16)
 tight_layout()
-fig.savefig('../plots/acc_sens_orig.png')
+fig.savefig('../plots/acc_sens_noise_25.png')
 
 
 fig, ax = subplots()
@@ -101,7 +101,7 @@ err_dn = sqrt(err_dn/n_data)
 ax.errorbar(range(num_el)[::skip], m_dn[::skip], yerr=err_dn[::skip], fmt="o", ms=6, ecolor="dodgerblue", color="midnightblue", elinewidth=0.4, label='Stoc stab')
 ax.legend(fontsize=16)
 tight_layout()
-fig.savefig('../plots/norm_sens_orig.png')
+fig.savefig('../plots/norm_sens_noise_25.png')
 
 
 fig, ax = subplots()
@@ -130,6 +130,6 @@ err_dc = sqrt(err_dc/n_data)
 ax.errorbar(range(num_el)[::skip], m_dc[::skip], yerr=err_dc[::skip], fmt="o", ms=6, ecolor="dodgerblue", color="midnightblue", elinewidth=0.4, label='Stoc stab')
 ax.legend(fontsize=16)
 tight_layout()
-fig.savefig('../plots/comp_sens_orig.png')
+fig.savefig('../plots/comp_sens_noise_25.png')
 
 
