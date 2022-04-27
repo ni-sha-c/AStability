@@ -17,7 +17,7 @@ for i, di in enumerate(direc):
     loss = loadtxt('../'+di+'/loss.txt')
     loss = loss[runup:]
     num_el = len(loss)
-    loss = cumsum(loss)/arange(1, num_el+1)
+    #loss = cumsum(loss)/arange(1, num_el+1)
     if i < len(direc)-1:
         ax.plot(loss,lw=3.0,label='i/p pert at ind {}'.format(i))
     else:
@@ -37,7 +37,7 @@ for i, di in enumerate(direc):
     acc = loadtxt('../'+di+'/test_acc.txt')
     acc = 100*acc[racc:-1]
     lacc = len(acc)
-    acc = cumsum(acc)/arange(1,lacc+1)
+    #acc = cumsum(acc)/arange(1,lacc+1)
     timeacc = range(racc*dacc, (racc+lacc)*dacc, dacc)
     if i < len(direc)-1:
         ax.plot(timeacc, acc, lw=3.0,label='i/p pert at ind {}'.format(i))
@@ -56,7 +56,7 @@ ax.grid(True)
 for i, di in enumerate(direc):
     n = loadtxt('../'+di+'/norm.txt')
     n = n[runup:]
-    n = cumsum(n)/arange(1,num_el+1)
+    #n = cumsum(n)/arange(1,num_el+1)
     if i < len(direc)-1:
         ax.plot(n,lw=3.0,label='i/p pert at ind {}'.format(i))
     else:
@@ -74,7 +74,7 @@ ax.grid(True)
 for i, di in enumerate(direc):
     c = loadtxt('../'+di+'/norm_comp.txt')
     c = c[runup:]
-    c = cumsum(c)/arange(1,num_el+1)
+    #c = cumsum(c)/arange(1,num_el+1)
     if i < len(direc)-1:
         ax.plot(c,lw=3.0,label='i/p pert at ind {}'.format(i))
     else:
