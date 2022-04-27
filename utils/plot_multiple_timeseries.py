@@ -3,7 +3,7 @@ from numpy import *
 from matplotlib.pyplot import *
 
 runup = 50
-dacc = 40
+dacc = 1
 racc = 4
 direc = loadtxt('../'+'dir_names.txt',dtype=str)
 fig, ax = subplots()
