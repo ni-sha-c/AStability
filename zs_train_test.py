@@ -39,6 +39,30 @@ def init_models(arch, precision, retrain, checkpoint_path):
       model = lenet(in_channels,10,precision)
     
     print(model)
+    # Fixed initial condition
+    if cfg.epsi > 1.e-8:
+        with torch.no_grad():
+            for i, lay_i in enumerate(model.features):
+                if type(lay_i) == nn.Conv2d:
+                    file_w = 'weights/wt_' + str(i) + '.npy'
+                    file_b = 'weights/b_' + str(i) + '.npy'
+                    with open(file_w, 'rb') as fw:
+                        temp_arr = torch.from_numpy(np.load(fw))
+                        dims_w = temp_arr.shape
+                        for d1 in range(dims_w[0]):
+                            for d2 in range(dims_w[1]):
+                                for d3 in range(dims_w[2]):
+                                    for d4 in range(dims_w[3]):
+                                        model.features[i].weight[d1,d2,d3,d4] = temp_arr[d1,d2,d3,d4]
+                                        if i == 40 and d1 == 0 and d2 == 0 and d3 == 0 and d4 == 0:
+                                            print(lay_i.weight[d1,d2,d3,d4])
+                                            model.features[i].weight[d1,d2,d3,d4] += cfg.epsi*np.random.rand()
+                                        
+                    with open(file_b, 'rb') as fb:
+                        temp_arr = torch.from_numpy(np.load(fb))
+                        dims_b = temp_arr.shape
+                        for d1 in range(dims_b[0]):
+                            model.features[i].bias[d1] = temp_arr[d1]
 
     checkpoint_epoch = 0
     if (retrain):
@@ -59,11 +83,10 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
     norm_list = np.zeros(cfg.epochs)
     norm1_list =  np.zeros(cfg.epochs)
     
-    num_acc = 40
+    num_acc = 1
     acc_list =  np.zeros(cfg.epochs//num_acc + 2)
     y = 0
     model, checkpoint_epoch = init_models(arch, precision, retrain, checkpoint_path)
-
     print('Training with Learning rate %.4f'%(cfg.learning_rate))
     opt = optim.SGD(model.parameters(),lr=cfg.learning_rate, momentum=0.9, weight_decay=cfg.weight_decay)
 
@@ -73,7 +96,8 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
     pflag = 0
     #curr_lr=cfg.learning_rate
                 
-    outputs_corrupt = np.zeros((len(trainloader), cfg.batch_size))
+    if cfg.noise > 1.e-8:
+        outputs_corrupt = np.zeros((len(trainloader), cfg.batch_size))
     for x in range(cfg.epochs):
 
         running_loss = 0.0
@@ -85,7 +109,7 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
             opt.zero_grad()
             
             # Sample noisy labels
-            if x == 0:
+            if x == 0 and cfg.noise > 1.e-8:
                 for ind, o_ind in enumerate(outputs): 
                     u = np.random.rand()
                     outputs_corrupt[batch_id, ind] = o_ind
@@ -95,14 +119,15 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
                         if bin_u < o_ind:
                             outputs_corrupt[batch_id, ind] = bin_u
                         else:
-                            outputs_corrupt[batch_id, ind] = bin_u
+                            outputs_corrupt[batch_id, ind] = bin_u+1
 
             # Inject noise into labels
-            for ind, o_ind in enumerate(outputs):
-                outputs[ind] = outputs_corrupt[batch_id,ind]
+            if cfg.noise > 1.e-8:
+                for ind, o_ind in enumerate(outputs):
+                    outputs[ind] = outputs_corrupt[batch_id,ind]
             
             # Input perturbation
-            if batch_id == 0:
+            if batch_id == 0 and cfg.pert_ip == 1:
                 first_ip = inputs[0,:,:,:]
                 first_op = outputs[0]
                 inputs = inputs[1:,:,:,:]
@@ -149,14 +174,14 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
         if ((x)%num_acc == 0) or (x==cfg.epochs-1):
             acc_list[y] = test(testloader, model, device)
             y = y+1
-        if x%200 == 0:
-            model_path = arch + '_' + dataset  + '_p_'+ str(precision) + '_model_' + str(checkpoint_epoch+x)+ '.pth'
+        if x%(cfg.epochs-1) == 0:
+            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/pert5_noise_50/norm.txt", norm_list)
-    np.savetxt("outputs/pert5_noise_50/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/pert5_noise_50/test_acc.txt", acc_list)
-    np.savetxt("outputs/pert5_noise_50/loss.txt", loss_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/norm.txt", norm_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/norm_comp.txt", norm1_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/test_acc.txt", acc_list)
+    np.savetxt("outputs/stochastic_stability/pert5_noise_50/loss.txt", loss_list)
            
 def test(testloader, model, device):            
     model.eval()
