@@ -9,11 +9,15 @@ cfg.faulty_layers = ['linear']
 
 cfg.batch_size = 128
 cfg.test_batch_size = 100
-cfg.epochs = 2000
+cfg.epochs = 1200
+cfg.del_pth = 1000
 cfg.precision = -1
-cfg.noise = 0.5
-cfg.pert_ip = 0
-cfg.epsi = 0
+cfg.noise = 0.25
+cfg.pert_ip = 1
+cfg.epsi = 1
+# no of batches of testloader to store
+cfg.nt = 10
+cfg.runup = 200
 #cfg.net = 'resnet56'
 #cfg.dataset = 'cifar10'
 cfg.models_dir = './models'

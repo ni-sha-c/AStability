@@ -56,7 +56,7 @@ def init_models(arch, precision, retrain, checkpoint_path):
                                         model.features[i].weight[d1,d2,d3,d4] = temp_arr[d1,d2,d3,d4]
                                         if i == 40 and d1 == 0 and d2 == 0 and d3 == 0 and d4 == 0:
                                             print(lay_i.weight[d1,d2,d3,d4])
-                                            model.features[i].weight[d1,d2,d3,d4] += cfg.epsi*np.random.rand()
+                                            #model.features[i].weight[d1,d2,d3,d4] += cfg.epsi*np.random.rand()
                                         
                     with open(file_b, 'rb') as fb:
                         temp_arr = torch.from_numpy(np.load(fb))
@@ -80,14 +80,15 @@ def init_models(arch, precision, retrain, checkpoint_path):
 def train_test(trainloader, testloader, arch, dataset, precision, retrain, checkpoint_path, device):
 
     loss_list = np.zeros(cfg.epochs)
-    norm_list = np.zeros(cfg.epochs)
-    norm1_list =  np.zeros(cfg.epochs)
-    
-    num_acc = 1
-    acc_list =  np.zeros(cfg.epochs//num_acc + 2)
+    #norm_list = np.zeros(cfg.epochs)
+    #norm1_list =  np.zeros(cfg.epochs)
+    acc_list =  np.zeros(cfg.epochs)
+    ntbs = len(testloader)
+    test_loss_list = np.zeros(ntbs*cfg.nt)
     y = 0
     model, checkpoint_epoch = init_models(arch, precision, retrain, checkpoint_path)
     print('Training with Learning rate %.4f'%(cfg.learning_rate))
+    #print('Model weight is ....', model.features[0].weight[0,0,0,0])
     opt = optim.SGD(model.parameters(),lr=cfg.learning_rate, momentum=0.9, weight_decay=cfg.weight_decay)
 
     model = model.to(device)
@@ -132,8 +133,8 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
                 first_op = outputs[0]
                 inputs = inputs[1:,:,:,:]
                 outputs = outputs[1:]
-                inputs[4,:,:,:] = first_ip
-                outputs[4] = first_op
+                inputs[2,:,:,:] = first_ip
+                outputs[2] = first_op
 
                 #    inputs[0,:,:,:] += inputs.mean()/1000*(-1.0 + 2.0*np.random.rand())
             
@@ -165,27 +166,40 @@ def train_test(trainloader, testloader, arch, dataset, precision, retrain, check
         loss_list[x] = (running_loss/(batch_id))
 
         # norm
-        norm_list[x] = (model.features[0].weight.view(-1).square().sum().detach().cpu().numpy())
-        norm1_list[x] = (model.features[0].weight[0,0,0,0].detach().cpu().numpy())
+        #norm_list[x] = (model.features[0].weight.view(-1).square().sum().detach().cpu().numpy())
+        #norm1_list[x] = (model.features[0].weight[0,0,0,0].detach().cpu().numpy())
 
         accuracy = running_correct.double()/(len(trainloader.dataset))
         print('epoch %d loss %.6f accuracy %.6f' %(x, running_loss/(batch_id), accuracy))
         #writer.add_scalar('Loss/train', running_loss/batch_id, x)   ## loss/#batches 
-        if ((x)%num_acc == 0) or (x==cfg.epochs-1):
-            acc_list[y] = test(testloader, model, device)
-            y = y+1
-        if x%(cfg.epochs-1) == 0:
-            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + '.pth'
+        
+        acc_list[x], test_loss = test(testloader, model, device)
+        if x > cfg.runup:
+            test_loss_list += test_loss/(cfg.epochs-cfg.runup)
+        if x == cfg.epochs-1:
+            model_path = arch + '_' + dataset + '_' + str(checkpoint_epoch+x) + 'p3n25' + '.pth'
             torch.save({'epoch': (checkpoint_epoch+x), 'model_state_dict': model.state_dict(), 'optimizer_state_dict': opt.state_dict(), 'loss': running_loss/batch_id, 'accuracy': accuracy}, model_path)
                 #utils.collect_gradients(params, faulty_layers)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_50/norm.txt", norm_list)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_50/norm_comp.txt", norm1_list)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_50/test_acc.txt", acc_list)
-    np.savetxt("outputs/stochastic_stability/pert5_noise_50/loss.txt", loss_list)
+    name_of_folder = "outputs/stoc_stab_final/pert3_noise_25/"
+    
+    with open(name_of_folder + "test_loss.txt", 'a') as f:
+        np.savetxt(f, acc_list)
+    with open(name_of_folder + "loss.txt", 'a') as f:
+        np.savetxt(f, loss_list)
+    with open(name_of_folder + "test_loss_cumsum.txt", 'a') as f:
+        np.savetxt(f, test_loss_list)
+
+
+
            
 def test(testloader, model, device):            
     model.eval()
-    running_correct = 0.0
+    #running_correct = 0.0
+    test_loss_mean = 0.0
+    ntbs = len(testloader)
+    test_loss_list = np.zeros(cfg.nt*ntbs)
+    loss = nn.CrossEntropyLoss(reduction='none')
+    mean_loss = nn.CrossEntropyLoss()
 
     with torch.no_grad():
 
@@ -194,14 +208,21 @@ def test(testloader, model, device):
           inputs = inputs.to(device)
           classes = classes.to(device)
           model_outputs =model(inputs)
-          #pdb.set_trace()
-          lg, preds = torch.max(model_outputs, 1)
-          correct=torch.sum(preds == classes.data)
-          running_correct += correct
           
-    acc = (running_correct.double()/(len(testloader.dataset)))
-    print('Eval Accuracy %.3f'%(acc))
-    return acc
+          if t < cfg.nt:
+              test_loss = loss(model_outputs, classes)
+              test_loss_list[ntbs*t:ntbs*(t+1)] = test_loss.cpu().detach().numpy()
+          test_loss_mean += cfg.test_batch_size*mean_loss(model_outputs, classes)
+
+          #lg, preds = torch.max(model_outputs, 1)
+          #correct=torch.sum(preds == classes.data)
+          #running_correct += correct
+          
+    ltest = len(testloader.dataset)
+    #acc = (running_correct.double()/ltest)
+    test_loss_mean /= ltest
+    #print('Eval Accuracy %.3f'%(acc))
+    return test_loss_mean, test_loss_list
 
 
 
