@@ -1,0 +1,1 @@
+Here, in each folder, the loss timeseries and the test loss timeseries are stored. The file test_loss_cumsum.txt stores the cumulative average over time of the first 1000 pts in the test data set. The cumulative average is taken after a runup time of 200 epochs. 
