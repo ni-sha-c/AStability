@@ -7,7 +7,7 @@ skip = 10
 
 
 direc = loadtxt('../'+'list.txt',dtype=str)
-n_dpts = 5 
+n_dpts = 6 
 n_data = int(n_dpts*(n_dpts-1)//2)
 n_noise = int(len(direc)//n_dpts)
 
@@ -22,7 +22,7 @@ ax.yaxis.set_tick_params(labelsize=16)
 ax.grid(True)
 for l in range(n_noise):
     acc = loadtxt('../'+direc[n_dpts*l]+'/test_acc.txt')
-    acc = acc[racc:]
+    acc = acc[racc:-2]
     nacc = len(acc)
     acces = zeros((n_dpts, nacc))
     r_dpts = range(n_dpts*l,n_dpts*(l+1))
@@ -45,6 +45,6 @@ for l in range(n_noise):
     ax.errorbar(range(nacc)[::skip], (m_dacc[::skip]), yerr=(err_dacc[::skip]), fmt="o", ms=10, ecolor=ec[l], color=lc[l], elinewidth=2.0, label='{} % noise'.format(noise[l]))
 ax.legend(fontsize=16)
 tight_layout()
-fig.savefig('../plots/stochastic_stability_loss.png')
+fig.savefig('../plots/stochastic_stability_acc.png')
 
 
