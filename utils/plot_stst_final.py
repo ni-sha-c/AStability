@@ -6,7 +6,7 @@ racc = 200
 skip = 1
 
 
-direc = loadtxt('../'+'list_stst_resnet.txt',dtype=str)
+direc = loadtxt('../'+'list_stst.txt',dtype=str)
 n_dpts = 10 
 n_data = int(n_dpts*(n_dpts-1)//2)
 n_noise = int(len(direc)//n_dpts)
@@ -29,11 +29,10 @@ for l in range(n_noise):
     print(l)
     for i, di in enumerate(direc[r_dpts]):
         print(i)
-        if not(l == 0 and i == 6):
-            acc = loadtxt('../'+di+'/test_loss.txt')
-            acc = acc[racc:]
-            acc = cumsum(acc)/arange(1, nacc+1)
-            acces[i] = acc
+        acc = loadtxt('../'+di+'/test_loss.txt')
+        acc = acc[racc:]
+        acc = cumsum(acc)/arange(1, nacc+1)
+        acces[i] = acc
 
     k = 0
     dacces = zeros((n_data, nacc))
@@ -43,10 +42,6 @@ for l in range(n_noise):
             dacces[k] = abs(acces[i] - acces[j])
             m_dacc += dacces[k]/n_data
             k = k + 1
-    if l == 0:
-        n_data = 36
-    else:
-        n_data = 45
 
     err_dacc = sum((dacces - m_dacc)**2, axis=0)/n_data
     err_dacc = sqrt(err_dacc/n_data)
