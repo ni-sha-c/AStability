@@ -4,8 +4,8 @@ from matplotlib.pyplot import *
 
 runup = 50
 dacc = 1
-racc = 4
-direc = loadtxt('../'+'dir_names.txt',dtype=str)
+racc = 200
+direc = loadtxt('../'+'dir_names4.txt',dtype=str)
 fig, ax = subplots()
 ax.set_xlabel("Time", fontsize=16)
 ax.set_ylabel("Training loss", fontsize=16)
@@ -24,7 +24,7 @@ for i, di in enumerate(direc):
         ax.plot(loss,lw=3.0,label='orig, first pt rmvd')
 ax.legend(fontsize=16)
 tight_layout()
-fig.savefig('../plots/loss_perts.png')
+#fig.savefig('../plots/loss_perts.png')
 
 fig, ax = subplots()
 
@@ -35,7 +35,7 @@ ax.yaxis.set_tick_params(labelsize=16)
 ax.grid(True)
 for i, di in enumerate(direc):
     acc = loadtxt('../'+di+'/test_acc.txt')
-    acc = 100*acc[racc:-1]
+    acc = 100*acc[racc:-2]
     lacc = len(acc)
     #acc = cumsum(acc)/arange(1,lacc+1)
     timeacc = range(racc*dacc, (racc+lacc)*dacc, dacc)
@@ -63,7 +63,7 @@ for i, di in enumerate(direc):
         ax.plot(n,lw=3.0,label='orig, first pt rmvd')
 ax.legend(fontsize=16)
 tight_layout()
-fig.savefig('../plots/weight_norm_perts.png')
+#fig.savefig('../plots/weight_norm_perts.png')
 
 fig, ax = subplots()
 ax.set_xlabel("Time", fontsize=16)

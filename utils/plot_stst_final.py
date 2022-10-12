@@ -1,15 +1,16 @@
 #!/usr/bin/python3
+
 from numpy import *
 from matplotlib.pyplot import *
 
 racc = 200
 skip = 1
 
-
 direc = loadtxt('../'+'list_stst.txt',dtype=str)
 n_dpts = 10 
 n_data = int(n_dpts*(n_dpts-1)//2)
 n_noise = int(len(direc)//n_dpts)
+
 
 ec = ['silver', 'cornflowerblue', 'violet', 'greenyellow', 'indianred']
 lc = ['black', 'darkblue', 'purple', 'darkgreen', 'maroon']
@@ -31,6 +32,7 @@ for l in range(n_noise):
         print(i)
         acc = loadtxt('../'+di+'/test_loss.txt')
         acc = acc[racc:]
+        nacc = len(acc)
         acc = cumsum(acc)/arange(1, nacc+1)
         acces[i] = acc
 
@@ -45,9 +47,8 @@ for l in range(n_noise):
 
     err_dacc = sum((dacces - m_dacc)**2, axis=0)/n_data
     err_dacc = sqrt(err_dacc/n_data)
-    ax.errorbar(range(nacc)[::skip], m_dacc[::skip], yerr=(err_dacc[::skip]), fmt="o", ms=10, ecolor=ec[l], color=lc[l], elinewidth=2.0, label='{} % noise'.format(noise[l]))
+    ax.errorbar(range(nacc)[::skip], m_dacc[::skip], yerr=(err_dacc[::skip]), lw=2.5, ecolor=ec[l], color=lc[l], elinewidth=2.0, label='{} % noise'.format(noise[l]))
 ax.legend(fontsize=16)
 tight_layout()
 #fig.savefig('../plots/stst_resnet.png')
-
 
